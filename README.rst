@@ -10,19 +10,20 @@ How?
 ----
 
 * Python's subprocess module
+* lxml.html Python package
 * curl
 
 Supported
 ---------
 
 * Response Header's ``Location``
+* ``http-equiv``
+* ``refresh``
 * manual
 
 Planned
 -------
 
-* ``http-equiv``
-* ``refresh``
 * js
 
 License

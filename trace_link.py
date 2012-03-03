@@ -4,15 +4,20 @@ import logging
 import re
 import sys
 
+import lxml.html
+
 
 def build_next_call(counter, url, referer=None, agent=None):
     # documentation claims that any argument in the list will be automatically
     # escaped if needed in order to prevent shell escape attacks
     res = ["curl", "-b", "cookies.jar"]
+
     if agent:
         res += ["-A", agent]
+
     if referer:
         res += ["-e", referer]
+
     res += ["-c", "cookies.jar", "-D", "jump%d.header" % counter,
             "-o", "jump%d.body" % counter, url]
     return res
@@ -21,14 +26,29 @@ def build_next_call(counter, url, referer=None, agent=None):
 def link_from_header(filename):
     with open(filename, "r") as indata:
         for line in indata:
-            tmp = re.match('^\s*Location: (.+)$', line)
+            tmp = re.match('^\s*Location: (.+)$', line, re.I)
             if tmp:
                 return tmp.group(1).strip()
     return None
 
 
 def link_from_body(filename):
-    # TODO
+    # lxml.html.parse will return an etree in case of xhtml that lacks the
+    # cssselect() method
+    dom = lxml.html.document_fromstring(open(filename, "r").read())
+
+    for _ in dom.cssselect('meta'):
+        if 'http-equiv' in _.keys():
+            k = _.get('http-equiv')
+
+            if k.lower().startswith('location'):
+                return _.get('content')
+            elif k.lower().startswith('refresh'):
+                tmp = re.search('\s(\w+://\S+)', _.get('content'), re.I)
+                if tmp:
+                    return tmp.group(1)
+
+    # TODO <a> and js
     return None
 
 

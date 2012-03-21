@@ -7,10 +7,13 @@ import sys
 import lxml.html
 
 
+USER_AGENT = "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; InfoPath.2; .NET CLR 2.0.50727; .NET CLR 3.0.04506.648; .NET CLR 3.5.21022; .NET CLR 1.1.4322)2011-10-16 20:22:33"
+
+
 def build_next_call(counter, url, referer=None, agent=None):
     # documentation claims that any argument in the list will be automatically
     # escaped if needed in order to prevent shell escape attacks
-    res = ["curl", "-b", "cookies.jar"]
+    res = ["curl", "-b", "cookies.jar", "-A", USER_AGENT]
 
     if agent:
         res += ["-A", agent]
@@ -33,20 +36,22 @@ def link_from_header(filename):
 
 
 def link_from_body(filename):
-    # lxml.html.parse will return an etree in case of xhtml that lacks the
-    # cssselect() method
-    dom = lxml.html.document_fromstring(open(filename, "r").read())
+    with open(filename, "r") as indata:
+        # lxml.html.parse will return an etree in case of xhtml that lacks the
+        # cssselect() method
+        dom = lxml.html.document_fromstring(indata.read())
 
-    for _ in dom.cssselect('meta'):
-        if 'http-equiv' in _.keys():
-            k = _.get('http-equiv')
+        for _ in dom.cssselect('meta'):
+            if 'http-equiv' in _.keys():
+                k = _.get('http-equiv')
 
-            if k.lower().startswith('location'):
-                return _.get('content')
-            elif k.lower().startswith('refresh'):
-                tmp = re.search('\s(\w+://\S+)', _.get('content'), re.I)
-                if tmp:
-                    return tmp.group(1)
+                if k.lower().startswith('location'):
+                    return _.get('content')
+                elif k.lower().startswith('refresh'):
+                    tmp = re.search('((http|https)://.+)', _.get('content'),
+                                    re.I)
+                    if tmp:
+                        return tmp.group(1)
 
     # TODO <a> and js
     return None

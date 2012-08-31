@@ -7,7 +7,9 @@ import sys
 import lxml.html
 
 
-USER_AGENT = "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; InfoPath.2; .NET CLR 2.0.50727; .NET CLR 3.0.04506.648; .NET CLR 3.5.21022; .NET CLR 1.1.4322)2011-10-16 20:22:33"
+USER_AGENT = "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; InfoPath.2; \
+        .NET CLR 2.0.50727; .NET CLR 3.0.04506.648; .NET CLR 3.5.21022; .NET \
+        CLR 1.1.4322)2011-10-16 20:22:33"
 
 
 def build_next_call(counter, url, referer=None, agent=None):
@@ -89,8 +91,8 @@ def trace_link(start_link, referrer=None):
         referer = last_url
 
         new_url = link_from_header("jump%d.header" % counter) or \
-                  link_from_body("jump%d.body" % counter) or \
-                  manual_input(counter, last_url)
+            link_from_body("jump%d.body" % counter) or \
+            manual_input(counter, last_url)
 
         counter += 1
     print '',
